@@ -1,0 +1,153 @@
+	HELLO WORLD
+
+Elasticsearch, Kibana e filebeats instalação básica e configurações - by LOGAN Comunidade Conecta
+
+IMPORTANTE: Verifique se o seu sistema tem os pacotes do Java instalados, e o Nodejs
+apt para instalação
+
+apt install defaut-jdk
+apt install nodejs
+
+OBS: INSTALAÇÃO LOCAL
+
+1 - Baixar o ElasticSearch, Kibana, Filebeat
+
+ja baixei, voces escolhem como preferem, eu uso o wget
+
+todos os links estao na descrição
+
+2 - Instalar o elasticseach, iniciar o serviço e verificar se o serviço esta
+rodando, curl localhost:9200 ou abre no navegador localhost9200
+
+depois instalar o kibana, iniciar o servico e verificar se esta rodando
+comando systemctl status kibana.service
+(runing)
+kibana demora mais um pouco
+
+3 - Acessar o host com a porta especificada (localhost:5601 - PADRÃO), e criar
+usuário padrão com suas próprias configuraçoes(kibana)
+
+4 - Ao adicionar uma integração
+
+esse erro ocorre pois para adicionar integracoes, voce precisa ter o pacote de segurança ativo
+
+(Missing security requirements), para resolver este problema que ira
+aparecer ao tentar adicionar uma integração, vocês iram colar este comando
+
+	xpack.security.enabled: true
+	xpack.security.authc.api_key.enabled: true
+
+no arquivo elasticsearch.yml
+
+5 - Reiniciar o serviço elasticsearch e abrir o navegador no host:5601, iram 
+verificar que o kibana não esta inicializando, pois como agora o pacote de
+segurança esta ativo, é necessario criar uma autenticação de usuario para
+acessar o kibana
+
+6 - Para resolver este problema, por via das dúvidas, executem um updatedb
+e procurem por elasticsearch-setup-passwords usando o locate
+
+7 - Executem o ./elasticsearch-setup-passwords auto ( o auto gera os usuários
+e senhas automaticamente (RECOMENDADO) ) para gerar suas próprias senhas
+utilize elasticsearch-setup-passwords interactive ao invés de "auto".
+
+8 - Senhas geradas, guarde as em um local seguro{
+	Changed password for user apm_system
+	PASSWORD apm_system = dnbH4Y5AiNoIIhzDLim9
+
+	Changed password for user kibana_system
+	PASSWORD kibana_system = iXF3AmbimP6VjEGVvtsE
+
+	Changed password for user kibana
+	PASSWORD kibana = iXF3AmbimP6VjEGVvtsE
+
+	Changed password for user logstash_system
+	PASSWORD logstash_system = xApaH3o7dmmdxZaivk63
+
+	Changed password for user beats_system
+	PASSWORD beats_system = 7KrbcGrJU8orMg8HKo7E
+
+	Changed password for user remote_monitoring_user
+	PASSWORD remote_monitoring_user = r0cNlrg2SffELMoxjDfD
+
+	Changed password for user elastic
+	PASSWORD elastic = tIhTfQRpLRnK4quNVnEm
+
+}
+
+9 - Procure o arquivo kibana.yml, ative os códigos removendo os hashtags,
+no lugar de pass coloque a senha do kibana_system gerada e salve
+#elasticsearch.username: "kibana_system"
+#elasticsearch.password: ("pass" = FwdHpZCyrtVKDTfNSbIn)
+
+10 - execute o comando kibana-keystore create
+
+A Kibana keystore already exists. Overwrite? [y/N] y
+
+11 - adicione o kibana-keystore ao elastic.passwords
+
+executando o ./kibana-keystore add elasticsearch.password
+
+ele ira pedir a senha do kibana_system, vocês copiam e colam. 
+
+12 - reinicia o kibana
+
+systemctl restart kibana.service
+
+e verifica
+
+systemctl status kibana.service
+
+Tudo OK
+
+13 - abram o navegador e acessem o host:5601 a página de login já estará criada.
+
+14 - loguem com o usuário e senha elastic, pois é o superuser
+
+Elasticsearch e kibana ja estão funcionando corretamente, agora só falta
+instalar as integraçoes que iram filtrar as informações específicas.
+
+15 - instalar o filebeat (utilizarei o filebeat como exemplo).
+
+16 - primeira coisa, conectar ao elasticsearch, vá ao arquivo filebeat.yml, 
+procure por output.elasticsearch e ative
+  hosts: ["myEShost:9200"]
+  username: "filebeat_internal"
+  password: ("YOUR_PASSWORD" = elasticpassword(tXnHzWRekBAkelYjGDQ2))
+
+17 - Agora ative os módulos de coleta, primeiro verifique os módulos que existe
+com o comando filebeat modules list
+
+18 - ative os módulos desejados, eu ativarei o nginx e o system
+com o comando filebeat modules enable nginx
+e filebeat modules enable system
+
+19 - testem a configuração dos módulos com o comando filebeat test config -e (RECOMENDADO)
+(-e é opcional e envia a saída para erro padrão em vez da saída de log configurada.) 
+
+Aguardem por CONFIG OK
+
+20 - subam os módulos para as configurações com o comando filebeat setup -e 
+
+depois disso
+
+21 - iniciem o serviço do filebeat, systemctl start filebeat.service, atualizem a página do host:5601
+
+22 - se forem em Stack Management e depois em Index Patterns veram que o filebeat já esta rodando
+no kibana, agora podem ir em dashboard, criar um novo dashboard, selecionar o filebeat
+e verificar alguns logs, obrigado!!!!!
+
+END - TUDO PRONTO PARA VISUALIZAR OS LOGS - By Logan, Comunidade Conecta
+
+OBRIGADO E FALOUUU !!!!!!
+
+
+
+
+
+
+
+
+
+
+
